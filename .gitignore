@@ -2,7 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+sample_code.ipynb
+config.json
+test_csv.py
+test_dataset_cipher.csv
+test_dataset.csv
+TODO.md
 # C extensions
 *.so
 
