@@ -4,6 +4,8 @@ Large Language Models for Cryptography Assistance.
 # Abstract
 Mathematical problems require a combination of natural language understanding, logical thinking, and computational skills. Current tools for solving mathematical problems are limited in their ability to understand natural language and provide step-by-step solutions. Even the currently popular large language models (LLMs) like shows suboptimal performance in solving mathematical problems. It is mostly due to the lack of specialized training data and the design of arithmetic problems which has a single correct answer with multistep reasoning. Cryptography is a complicated field of study that is essential for securing information and transactions in digital world and requires a combination of mathematical, logical, and computational skills. In this project we design a large language model based assistant for cryptography problems. The dataset is curated from popular academic texts and will be publicly available. The assistant is a finetuned version of the llama 7b parameter model in two stages - the first part of the fine tuning process is based on a open source mathematics dataset and the second part is based on the curated cryptography dataset on the previously fine tuned model. Language Chaining will also be used to improve the performance of the model. The model is evaluated on a test set of unseen data and compared with the performance of the original llama model. The results show that the model is able to solve the problems with a higher accuracy and provide step-by-step solutions for the problems.
 
+<img src="assets/fine_tune_bitmap.png" alt="Fine Tuning Flowchart" width="500"/>
+
 
 
 ## Dataset Preparation
