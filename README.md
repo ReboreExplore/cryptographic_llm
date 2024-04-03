@@ -40,7 +40,7 @@ Tokenization, Standardization, Numerical form in latex common standard, Chain of
 # Model Training
 The model training is done in two stages:
 1. **Stage 1:**
-- Pretrained on llama 7b model
+- Pretrained llama 7b model
 - Fine-tuned on publicly available mathematics dataset ([MATH](https://github.com/hendrycks/math) dataset).
 2. **Stage 2:**
 - Fine-tuned on the curated cryptography dataset
