@@ -34,3 +34,4 @@ Output : "Given that 11 is a divisor of 66 and 66 is a divisor of 198, is it tru
 Since we are mostly using Llama and Mistral models, we are using the llama tokenizer to generate the dataset samples. These models have a context length of size 4096. Out of that the system prompt consumes __834__ tokens.
 
 ## Rephrasing system prompt
+
