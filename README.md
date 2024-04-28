@@ -8,7 +8,10 @@ This repository contains the codebase and results as a part of a Research Projec
 
 
 ## Abstract 📝
-Mathematical problems require a combination of natural language understanding, logical thinking, and computational skills. Current tools for solving mathematical problems are limited in their ability to understand natural language and provide step-by-step solutions. Even the currently popular large language models (LLMs) like shows suboptimal performance in solving mathematical problems. It is mostly due to the lack of specialized training data and the design of arithmetic problems which has a single correct answer with multistep reasoning. Cryptography is a complicated field of study that is essential for securing information and transactions in digital world and requires a combination of mathematical, logical, and computational skills. In this project we design a large language model based assistant for cryptography problems. The dataset is curated from popular academic texts and will be publicly available. The assistant is a finetuned version of the llama 7b parameter model in two stages - the first part of the fine tuning process is based on a open source mathematics dataset and the second part is based on the curated cryptography dataset on the previously fine tuned model. Language Chaining will also be used to improve the performance of the model. The model is evaluated on a test set of unseen data and compared with the performance of the original llama model. The results show that the model is able to solve the problems with a higher accuracy and provide step-by-step solutions for the problems.
+Real life mathematical problems require a combination of natural language understanding, logical thinking, and computational skills. Cryptography is one such complicated field of computer science that requires a good blend of natural understanding and mathematical reasoning skills. Current tools for solving such problems are limited in their ability by either understanding and interpreting only natural language or only excelling in mathematical computations if inputted in a specific format.
+Large Language Models (LLMs) have shown great promise in solving a wide range of problems by understanding and generating human-like text. However, the currently popular large language models (LLMs) like shows suboptimal performance in solving mathematical problems. It is mostly due to the lack of specialized training data and the design of arithmetic problems which has a single correct answer with multistep reasoning. In this project we design a large language model based assistant for cryptography problems. Two versions of CrytoLLM finetuned models are trained for solving the cryptographic problems. The first model is fine-tuned on a already math-finetuned mistral model using the cryptographic dataset and the other version is fine-tuned in two stages - first on the math dataset and then on the cryptographic dataset. The accuracy of both the experiments are compared and the results are discussed. Cryptographic capability evaluation is also an issue arising from the lack of high-quality cryptography datasets. Thus we propose a new cryptodataset, CryptoLLMQA which is curated from popular academic textbooks and resources and will be publicly available for research purposes. No cryptographic benchmark dataset is available currently for extensive evaluation purpose.
+
+This is preliminary work and the results current results can further be improved by fine-tuning on a larger dataset. 
 
 <img src="assets/fine_tune_bitmap.png" alt="Fine Tuning Flowchart" width="500"/>
 
@@ -19,7 +22,6 @@ Mathematical problems require a combination of natural language understanding, l
 * [Directory Structure](#roles-and-implementation)
 * [Dataset Statistics](attack-mechanisms)
 * [Results and Discussion](#results-and-discussion)
-
 * [License](#license)
 * [References](#references)
 
@@ -40,6 +42,24 @@ You can request access to use the model with the links below:
 | [Mistral Family](https://huggingface.co/mistralai)
 
 4. Access to a minimum of 18GB of GPU memory to successfully finetune the model and run inference.
+
+5. Make a hugging face account to upload the models and datasets to the hugging face hub.
+
+To authenticate services to hugging face, generate a token from the hugging face website : 
+You need a READ token to access datasets and a WRITE token to upload datasets and models.
+
+More information about generating the token can be found [here](https://huggingface.co/docs/hub/en/security-tokens#)
+
+This token can either be stored in your local Hugging face directory (usually in .cache/huggingface/token) or can be passed as an environment variable.
+To save the token in the local directory, run the following command:
+
+```bash
+huggingface-cli login
+```
+
+
+
+
 ## Directory Structure 📁
 
 ## Dataset Statistics 📊
