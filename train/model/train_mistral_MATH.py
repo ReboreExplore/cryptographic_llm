@@ -1,5 +1,5 @@
 """
-This is the training script for the Llama-2-7b model. 
+This is the training script for the Mistral-7b model. 
 The script trains the model on a math dataset and saves the trained model to the disk.
 
 Dataset used: hendrycks/competition_math
@@ -48,31 +48,29 @@ DEFAULT_SYSTEM_PROMPT = """ You are a fine-tuned AI model who is a math genious.
 Follow a chain of thought approach while answering and answer in brief. """
 
 
-def format_conversation_llama2(dataset):
+def format_conversation_mistral7b(dataset):
     '''
-    Formats a conversation in LLAMA2 style.
-
-    This function takes a dataset containing a problem and its solution, and formats it into a LLAMA2-style 
-    conversation.
+    Formats the dataset into a conversation format for the Mistral-7b model.
 
     Args:
-    - dataset (dict): A dictionary containing the problem and solution of the conversation.
+        dataset (dict): A dictionary containing the problem and solution.
 
     Returns:
-    dict: A dictionary containing the formatted conversation.
+        dict: A dictionary containing the formatted conversation.
 
-    Example:
-    >>> dataset = {'problem': 'How can I improve my coding skills?', 'solution': 'You can improve your coding skills 
-    by practicing regularly and working on challenging projects.'}
-    >>> formatted_conversation = format_conversation_llama2(dataset)
-    >>> print(formatted_conversation)
-    {'text': '<s>[INST] <<SYS>> How can I improve my coding skills? <</SYS>> You can improve your coding skills by 
-    practicing regularly and working on challenging projects. </s>'}
 
     '''
 
-    template = """<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n{question}[/INST] {answer}</s>"""
+    template = """
+                ### Instruction:
+                {system_prompt}
 
+                ### Input:
+                {question}
+
+                ### Response:
+                {answer}
+                """
     conversation = template.format(
         system_prompt=DEFAULT_SYSTEM_PROMPT,
         question=dataset['problem'],
@@ -85,11 +83,12 @@ def format_conversation_llama2(dataset):
 # Model Definitions
 ################################################################################
 
+# Get the model
 # The model that you want to train from the Hugging Face hub
-model_name = "meta-llama/Llama-2-7b-chat-hf"
+model_name = "mistralai/Mistral-7B-v0.1"
 
 # Fine-tuned math model name (date-month-hour-minutes)
-new_model = "llama-2-7b-chat-math-06-04-10-30"
+new_model = "mistral-2-7b-06-04-12-50"
 
 # Output directory where the model predictions,configuration files and checkpoints will be stored
 output_dir = f"./results/{new_model}"
@@ -202,13 +201,11 @@ def main():
     math_dataset = load_dataset("hendrycks/competition_math",trust_remote_code=True, split="train")
     logging.info("Dataset Loaded")
 
-    # Format the dataset
     math_format_dataset = math_dataset.map(
-    format_conversation_llama2,
+    format_conversation_mistral7b,
     remove_columns=math_dataset.column_names, # remove all columns; only "text" will be left
     num_proc=os.cpu_count()  # multithreaded
     )
-    
     logging.info("Dataset Formatted")
     
     # Load LLaMA tokenizer
