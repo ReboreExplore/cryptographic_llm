@@ -1,12 +1,12 @@
 """
-This is the training script for the Mistral-7b model. 
+This is the training script for the Llama-2-7b model. 
 The script trains the model on a math dataset and saves the trained model to the disk.
 
 Dataset used: hendrycks/competition_math
 
 Usage:
 ```bash
-python train_llama.py
+python crypto-llama7b.py CUDA_VISIBLE_DEVICES=0
 ```
 """
 
@@ -43,26 +43,40 @@ logging.info("Modules Loaded")
 # Prompt Formatting
 ################################################################################
 
+# Default system prompt for LLAMA2-style conversations
+DEFAULT_SYSTEM_PROMPT = DEFAULT_SYSTEM_PROMPT = """You are a cryptography expert. You have good grasp on the cryptographic concepts and can solve medium 
+to high level problems related to maths and cryptography."""
 
-def format_conversation(dataset):
+
+def format_conversation_llama2(dataset):
     '''
-    Formats the dataset into a conversation format for the Mistral-7b model.
+    Formats a conversation in LLAMA2 style.
+
+    This function takes a dataset containing a problem and its solution, and formats it into a LLAMA2-style 
+    conversation.
 
     Args:
-        dataset (dict): A dictionary containing the problem and solution.
+    - dataset (dict): A dictionary containing the problem and solution of the conversation.
 
     Returns:
-        dict: A dictionary containing the formatted conversation.
+    dict: A dictionary containing the formatted conversation.
 
+    Example:
+    >>> dataset = {'problem': 'How can I improve my coding skills?', 'solution': 'You can improve your coding skills 
+    by practicing regularly and working on challenging projects.'}
+    >>> formatted_conversation = format_conversation_llama2(dataset)
+    >>> print(formatted_conversation)
+    {'text': '<s>[INST] <<SYS>> How can I improve my coding skills? <</SYS>> You can improve your coding skills by 
+    practicing regularly and working on challenging projects. </s>'}
 
     '''
 
-    template = """ Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n ### Instruction:\n{question}\n\n### Response: Let's think step by step.\n{answer}"
-    """
+    template = """<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n{question}[/INST] {answer}</s>"""
 
     conversation = template.format(
-        question=dataset['query'],
-        answer=dataset['response'],
+        system_prompt=DEFAULT_SYSTEM_PROMPT,
+        question=dataset['problem'],
+        answer=dataset['solution'],
     )
 
     return {"text": conversation}
@@ -71,12 +85,11 @@ def format_conversation(dataset):
 # Model Definitions
 ################################################################################
 
-# Get the model
 # The model that you want to train from the Hugging Face hub
-model_name = "mistralai/Mistral-7B-v0.1"
+model_name = "meta-llama/Llama-2-7b-chat-hf"
 
 # Fine-tuned math model name (date-month-hour-minutes)
-new_model = "meta_math_mistral-7b-crypto-23-04-12-10"
+new_model = "llama7b-crypto-06-04-10-30"
 
 # Output directory where the model predictions,configuration files and checkpoints will be stored
 output_dir = f"./results/{new_model}"
@@ -115,7 +128,7 @@ use_nested_quant = False
 ################################################################################
 
 # Number of training epochs
-num_train_epochs = 4
+num_train_epochs = 5
 
 # Enable fp16/bf16 training (set bf16 to True with an A100)
 fp16 = False
@@ -137,7 +150,7 @@ gradient_checkpointing = True
 max_grad_norm = 0.3
 
 # Initial learning rate (AdamW optimizer)
-learning_rate =  5e-6
+learning_rate = 2e-4
 
 # Weight decay to apply to all layers except bias/LayerNorm weights
 weight_decay = 0.001
@@ -159,10 +172,10 @@ warmup_ratio = 0.03
 group_by_length = True
 
 # Save checkpoint every X updates steps
-save_steps = 10000
+save_steps = 25
 
 # Log every X updates steps
-logging_steps = 10000
+logging_steps = 25
 
 # Logging Directory
 logging_dir = f"./logs/{new_model}/"
@@ -178,23 +191,25 @@ max_seq_length = None
 packing = False
 
 # Load the entire model on the GPU 0
-# device_map = {"": 0}
-# Set to "auto" while using multiple GPUs
-device_map = "auto"
+device_map = {"": 0}
+# # Set to "auto" while using mulptiple GPUs
+# device_map = "auto"
 
 
 def main():
 
     # Get the dataset from hugging_face
-    # Get the dataset from hugging_face - in MetaMath Dataset only train split is available 
-    math_dataset = load_dataset("meta-math/MetaMathQA",trust_remote_code=True, split= "train")
+    # Get the crypto-dataset from hugging face
+    math_dataset = load_dataset("hendrycks/competition_math",trust_remote_code=True, split= "train")
     logging.info("Dataset Loaded")
 
+    # Format the dataset
     math_format_dataset = math_dataset.map(
-    format_conversation,
+    format_conversation_llama2,
     remove_columns=math_dataset.column_names, # remove all columns; only "text" will be left
     num_proc=os.cpu_count()  # multithreaded
-    )
+)
+    
     logging.info("Dataset Formatted")
     
     # Load LLaMA tokenizer
@@ -234,6 +249,8 @@ def main():
     )
     
     logging.info("Model loaded")
+
+    
     
     model.config.use_cache = False
     model.config.pretraining_tp = 1
@@ -245,8 +262,8 @@ def main():
         r=lora_r,
         bias="none",
         task_type="CAUSAL_LM",
-        target_modules= ["q_proj", "v_proj", "k_proj"],
-        modules_to_save= ["embed_tokens", "lm_head"],
+        # target_modules= ["q_proj", "v_proj", "k_proj"],
+        # modules_to_save= ["embed_tokens", "lm_head"],
     )
 
     # Set training parameters

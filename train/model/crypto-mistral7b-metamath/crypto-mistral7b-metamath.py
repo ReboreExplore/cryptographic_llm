@@ -1,12 +1,12 @@
 """
-This is the training script for the Mistral-7b model. 
+This is the training script for the Llama-2-7b model. 
 The script trains the model on a math dataset and saves the trained model to the disk.
 
-Dataset used: hendrycks/competition_math
+Dataset used: Manpa/cryptoqa-v1
 
 Usage:
 ```bash
-python train_llama.py
+python crypto-mistral7b-metamath.py CUDA_VISIBLE_DEVICES=0
 ```
 """
 
@@ -44,33 +44,35 @@ logging.info("Modules Loaded")
 ################################################################################
 
 # Default system prompt for LLAMA2-style conversations
-DEFAULT_SYSTEM_PROMPT = """ You are a fine-tuned AI model who is a math genious. You can solve simple to moderate level mathematics problems. 
-Follow a chain of thought approach while answering and answer in brief. """
+DEFAULT_SYSTEM_PROMPT = DEFAULT_SYSTEM_PROMPT = """You are a cryptography expert. You have good grasp on the cryptographic concepts and can solve medium 
+to high level problems related to maths and cryptography."""
 
 
-def format_conversation_mistral7b(dataset):
+def format_conversation_llama2(dataset):
     '''
-    Formats the dataset into a conversation format for the Mistral-7b model.
+    Formats a conversation in LLAMA2 style.
+
+    This function takes a dataset containing a problem and its solution, and formats it into a LLAMA2-style 
+    conversation.
 
     Args:
-        dataset (dict): A dictionary containing the problem and solution.
+    - dataset (dict): A dictionary containing the problem and solution of the conversation.
 
     Returns:
-        dict: A dictionary containing the formatted conversation.
+    dict: A dictionary containing the formatted conversation.
 
+    Example:
+    >>> dataset = {'problem': 'How can I improve my coding skills?', 'solution': 'You can improve your coding skills 
+    by practicing regularly and working on challenging projects.'}
+    >>> formatted_conversation = format_conversation_llama2(dataset)
+    >>> print(formatted_conversation)
+    {'text': '<s>[INST] <<SYS>> How can I improve my coding skills? <</SYS>> You can improve your coding skills by 
+    practicing regularly and working on challenging projects. </s>'}
 
     '''
 
-    template = """
-                ### Instruction:
-                {system_prompt}
+    template = """<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n{question}[/INST] {answer}</s>"""
 
-                ### Input:
-                {question}
-
-                ### Response:
-                {answer}
-                """
     conversation = template.format(
         system_prompt=DEFAULT_SYSTEM_PROMPT,
         question=dataset['problem'],
@@ -83,12 +85,11 @@ def format_conversation_mistral7b(dataset):
 # Model Definitions
 ################################################################################
 
-# Get the model
 # The model that you want to train from the Hugging Face hub
-model_name = "mistralai/Mistral-7B-v0.1"
+model_name = "Manpa/mistral-7b-metamath"
 
 # Fine-tuned math model name (date-month-hour-minutes)
-new_model = "mistral-2-7b-06-04-12-50"
+new_model = "meta_math_mistral-7b-crypto-06-04-10-30"
 
 # Output directory where the model predictions,configuration files and checkpoints will be stored
 output_dir = f"./results/{new_model}"
@@ -127,7 +128,7 @@ use_nested_quant = False
 ################################################################################
 
 # Number of training epochs
-num_train_epochs = 4
+num_train_epochs = 10
 
 # Enable fp16/bf16 training (set bf16 to True with an A100)
 fp16 = False
@@ -198,14 +199,17 @@ device_map = {"": 0}
 def main():
 
     # Get the dataset from hugging_face
-    math_dataset = load_dataset("hendrycks/competition_math",trust_remote_code=True, split="train")
+    # Get the crypto-dataset from hugging face
+    crypto_dataset = load_dataset("Manpa/cryptoqa-v1",trust_remote_code=True, split= "train")
     logging.info("Dataset Loaded")
 
-    math_format_dataset = math_dataset.map(
-    format_conversation_mistral7b,
-    remove_columns=math_dataset.column_names, # remove all columns; only "text" will be left
+    # Format the dataset
+    crypto_format_dataset = crypto_dataset.map(
+    format_conversation_llama2,
+    remove_columns=crypto_dataset.column_names, # remove all columns; only "text" will be left
     num_proc=os.cpu_count()  # multithreaded
-    )
+)
+    
     logging.info("Dataset Formatted")
     
     # Load LLaMA tokenizer
@@ -245,6 +249,8 @@ def main():
     )
     
     logging.info("Model loaded")
+
+    
     
     model.config.use_cache = False
     model.config.pretraining_tp = 1
@@ -256,8 +262,8 @@ def main():
         r=lora_r,
         bias="none",
         task_type="CAUSAL_LM",
-        target_modules= ["q_proj", "v_proj", "k_proj"],
-        modules_to_save= ["embed_tokens", "lm_head"],
+        # target_modules= ["q_proj", "v_proj", "k_proj"],
+        # modules_to_save= ["embed_tokens", "lm_head"],
     )
 
     # Set training parameters
@@ -288,7 +294,7 @@ def main():
     # Set supervised fine-tuning parameters
     trainer = SFTTrainer(
         model=model,
-        train_dataset=math_format_dataset,
+        train_dataset=crypto_format_dataset,
         peft_config=peft_config,
         dataset_text_field="text",
         max_seq_length=max_seq_length,
