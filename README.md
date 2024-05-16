@@ -8,12 +8,10 @@ This repository contains the codebase and results as a part of a Research Projec
 
 
 ## Abstract 📝
-Real life mathematical problems require a combination of natural language understanding, logical thinking, and computational skills. Cryptography is one such complicated field of computer science that requires a good blend of natural understanding and mathematical reasoning skills. Current tools for solving such problems are limited in their ability by either understanding and interpreting only natural language or only excelling in mathematical computations if inputted in a specific format.
-Large Language Models (LLMs) have shown great promise in solving a wide range of problems by understanding and generating human-like text. However, the currently popular large language models (LLMs) like shows suboptimal performance in solving mathematical problems. It is mostly due to the lack of specialized training data and the design of arithmetic problems which has a single correct answer with multistep reasoning. In this project we design a large language model based assistant for cryptography problems. Two versions of CrytoLLM finetuned models are trained for solving the cryptographic problems. The first model is fine-tuned on a already math-finetuned mistral model using the cryptographic dataset and the other version is fine-tuned in two stages - first on the math dataset and then on the cryptographic dataset. The accuracy of both the experiments are compared and the results are discussed. Cryptographic capability evaluation is also an issue arising from the lack of high-quality cryptography datasets. Thus we propose a new cryptodataset, CryptoLLMQA which is curated from popular academic textbooks and resources and will be publicly available for research purposes. No cryptographic benchmark dataset is available currently for extensive evaluation purpose.
+Real-life mathematical problems require a combination of natural language understanding, logical thinking, and computational skills. Cryptography is one such complicated field of computer science that requires a good blend of natural understanding and mathematical reasoning skills. Current tools for solving such problems are limited in their ability to either understand and interpret only natural language or only excel in mathematical computations if inputted in a specific format.
+Large Language Models (LLMs) have shown great promise in solving a wide range of problems by understanding and generating human-like text. However, the currently popular LLMs like GPT-3.5, llama series etc., show suboptimal performance in solving mathematical problems. It is mostly due to the lack of specialized training data and the design of arithmetic problems which has a single correct answer with multistep reasoning. In this project, we design a LLM-based assistant for cryptography problems. We also propose a novel crypto dataset, **CryptoQA** which is curated from popular academic textbooks and resources and is publicly available. Four versions of finetuned models (**CryptoLLMs**) are also trained for solving cryptographic problems. The first two models are fine-tuned on an already math-tuned and a general-purpose LLM respectively using the CryptoQA dataset. The other two versions are fine-tuned in two stages - first on a publicly available math dataset and then on the CryptoQA dataset. A qualitative behavioral analysis of the fine-tuned models is conducted and is made publicly available for experimentation and research. 
 
-This is preliminary work and the results current results can further be improved by fine-tuning on a larger dataset. 
-
-<img src="assets/fine_tune_bitmap.png" alt="Fine Tuning Flowchart" width="500"/>
+<img src="assets/others/approach_flowchart.png" alt="Fine Tuning Flowchart" width="500"/>
 
 ## Table of Contents 📚
 
@@ -57,48 +55,83 @@ To save the token in the local directory, run the following command:
 huggingface-cli login
 ```
 
+6. Generate an OpenAI API key to use the GPT-3.5 model for sample generation. The API key can be generated from the OpenAI website. 
 
+You can get your API key from [here](https://beta.openai.com/).
 
 
 ## Directory Structure 📁
-
+```bash
+.
+├── LICENSE
+├── README.md
+├── assets
+│   ├── dataset_analysis
+│   ├── loss-charts-results
+│   └── others
+├── dataset
+│   ├── dataset_files
+│   └── dataset_generation
+├── inference
+│   ├── inference.py
+│   ├── playground_notebook_inference
+│   └── runs
+├── model-preliminary-tests
+│   ├── How much does current models know crypto?.ipynb
+│   ├── language_chaining_tests.ipynb
+│   ├── llama_tokenizer
+│   └── why_crypto_llama_2.ipynb
+├── presentations
+│   ├── Manpa_RP_midterm-3.pdf
+│   └── research_project_report_manpa-final.pdf
+├── requirements.txt
+└── train
+    ├── data
+    └── model
+```
 ## Dataset Statistics 📊
-- Number of samples: 1000
-- Dataset Format: CSV
-- Hugging Face Link : [Insert Link Here]
+- Number of samples: 510 training samples and 50 testing samples
+- Dataset Format: Comman Separated Values (CSV)
+- Hugging Face Link : [CryptoQA](https://huggingface.co/datasets/Manpa/cryptoqa-v1)
 
-The dataset is has a train split only. The dataset is in the format of a csv file with the following columns:
-1.  __question__ : The cryptographic problem statement/question
-2.  __answer__ : The answer to the problem statement/question
-3.  __type__ : If it is a forward or backward reasoning problem : this only applies to the math problems
+The dataset is has a train and test split only. The dataset is in the format of a csv file with the following columns:
+1.  __question__: The cryptographic problem statement/ question
+2.  __answer__: The answer to the problem statement/ question
+3.  __type__: This label identifies whether the information within the question or answer pertains primarily to a text problem (`word`), numerical problem (`math`),
+or cipher problems containing mathematical computations (`cipher-math`).
 
     <img src="assets/dataset_analysis/type_pie_chart.png" alt="Type Pie Chart" width="300"/>
-4.  __category__: The type of the answer i.e. if it is a math problem or a word problem
+4.  __category__: This label differentiates between original question-answer pair (`orig`)
+and sample generated by augmentation i.e. (`valmod`, `rephr` and `bkwrd`). 
 
     <img src="assets/dataset_analysis/category_pie_chart.png" alt="Category Pie Chart" width="300"/>
 
-5.  __topic__: The topic of the problem statement/question : numbertheory or probability or cipher
+5.  __topic__: This label specifies the specific area of cryptography being addressed,
+such as `probability`, `numbertheory`, and `cipher`. This topical categorization
+allows the LLM to focus on relevant domain knowledge when processing the
+information.
 
     <img src="assets/dataset_analysis/topic_pie_chart.png" alt="Topic Pie Chart" width="300"/>
     
-6.  __source__: The source of the problem statement/question : book abbreviation or website
+6.  __source__: Initials of the academic texts or sources used. This category does not
+pose any additional meaning other than metadata of the dataset creators.
 
 
 
 ## Dataset Preparation
 The dataset preparation is done is five different stages
 1. **Main cryptographic primitives:**
+
     Number Theory, Symmetric Cipher Model, Block Ciphers, Finite Fields , Random Bit Generation and Stream Ciphers, Asymmetric Ciphers
 2. **Data Collection and Source**    
 - Well-established academic textbooks
     - Cryptography and Network Security, William Stallings ;  Number Theory and Cryptography, Neal Koblitz ; A Gentle Introduction to number theory and Crryptography, Luis Finotti ;
-    - Mathematics Aptitude Test of Heuristics (MATH)
+    - Mathematics Aptitude Test of Heuristics (MATH) and MetaMath.
 3. **Cleaning and Preprocessing Data:**
-Tokenization, Standardization, Numerical form in latex common standard, Chain of thought approach, Monolingual Data - English only, Manual Inspection
+Tokenization, Standardization (Numerical form in latex common standard, Chain of thought approach) Monolingual Data
 4. **Data Annotation:**
 - Labels: for a good train-test split and markers
-    - question, answer, type: word or math, category: orig or back, topic: numbertheory or cipher,
-- Manual Annotation (using prompt engineering in gpt-3.5)
+- Manual Annotation and Rearrangement (using prompt engineering in gpt-3.5)
 5. **Data Augmentation:**
 - Backward vs. Forward reasoning answers [17]
     • Deduce missing values in question
@@ -106,48 +139,25 @@ Tokenization, Standardization, Numerical form in latex common standard, Chain of
 - Input Space Augmentation
 
 6. **Data Format Conversion**
-- Llamma Template to ensure high quality dataset
+- Llama Template to ensure high quality dataset for llama models
 ```
 <s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{user_message_1} [/INST]
 ```
 # Sample Dataset
-    Apply the Extended Euclidean Algorithm to find the gcd of $134$ and $52$,"Starting with the Euclidean Algorithm: $134 = 52 \cdot 2 + 30$, $52 = 30 \cdot 1 + 22$, $30 = 22 \cdot 1 + 8$, $22 = 8 \cdot 2 + 6$, $8 = 6 \cdot 1 + 2$ (GCD), $6 = 2 \cdot 3$. We then express each remainder as a sum of products of $134$ and $52$: $30 = 134 + 52 \cdot (-2)$, $22 = 52 - 30 \cdot 1 = 52 - (134 + 52 \cdot (-2)) = 134 \cdot (-1) + 52 \cdot 3$, $8 = 134 \cdot 2 + 52 \cdot (-5)$, $6 = 134 \cdot (-5) + 52 \cdot 13$, $2 = 7 \cdot 134 + 52 \cdot (-18)$. Therefore, $2 = 7 \cdot 134 + 52 \cdot (-18)$ since $\text{gcd}(134, 52) = 2$. The EEA gives us many nice results. We will now show a few of its applications.",orig,math,numbertheory,grad.pdf
+   <img src="assets/others/sample_CryptoQA.png" alt="Fine Tuning Flowchart" width="500"/>
 
+The dataset generator scripts are availble in the `dataset/dataset_generation` directory.
+
+The dataset is available in the `dataset/dataset_files` directory.
 
 # Model Training
-The model training is done in two stages:
-1. **Stage 1:**
-- Pretrained llama 7b model
-- Fine-tuned on publicly available mathematics dataset ([MATH](https://github.com/hendrycks/math) dataset).
-2. **Stage 2:**
-- Fine-tuned on the curated cryptography dataset
+Four models are fine tuned on the CryptoQA dataset.
+1. `crypto-llama7b-math` - [HF Model Card](https://huggingface.co/Manpa/crypto-math-llama7b)
+2.  `crypto-llama7b` - [HF Model Card](https://huggingface.co/Manpa/crypto-llama7b)
+3.  `crypto-mistral7b-metamath` - [HF Model Card](https://huggingface.co/Manpa/mistral-7b-metamath)
+4.  `crypto-metamath` - [HF Model Card](https://huggingface.co/Manpa/crypto-metamath)
 
+To run the models, you can use the scripts in the `train/model/` directory. 
 
-
- (to be updated later)
-
-## Results till now (to be updated later)
-
-1. Model 1 - Fine tuned on llama 2 chat model -[llama-2-7b-chat-math-01-04-12-10]
-    - scheduler = constant
-    - lr = 2e-4
-    - official prompt
-    - tokenizer - eos, bos, pad added
-    - <img src="assets/loss-charts-results/llama-2-7b-chat-math-01-04-12-10-smooth.png" alt="llama-2-7b-chat-math-01-04-12-10-inference-results" width="300"/>
-
-2. Model 2 - Fine tuned on llama 2 13b model [llama-2-13b-chat-math-06-04-10-30]
-    - scheduler = cosine
-    - lr = 2e-4
-    - official prompt
-    - tokenizer - eos, bos, pad added
-    - <img src="assets/loss-charts-results/llama-2-13b-chat-math-06-04-10-30.png" alt="llama-2-13b-chat-math-06-04-10-30-inference-results" width="300"/>
-
-    - <img src="assets/loss-charts-results/llama-2-13b-chat-math-06-04-10-30-lr.png" alt="llama-2-13b-chat-math-06-04-10-30-inference-results" width="300"/>
-
-
-3. Fine tuned on mistral 7b model 
-    - scheduler = cosine
-    - lr = 2e-4
-    - official prompt
-    - tokenizer - eos, bos, pad added
-    - <img src="assets/loss-charts-results/mistal_7b_.png" alt="mistral_7b_inference_results" width="300"/>
+## License 📜
+The codebase and the dataset are licensed under the MIT License. The dataset is publicly available on the Hugging Face Datasets Hub.
