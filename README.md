@@ -160,7 +160,7 @@ Four models are fine tuned on the CryptoQA dataset.
 To run the models, you can use the scripts in the `train/model/` directory. 
 
 ## Loss Charts and Results 📊
-![alt text](image.png)
+![Loss charts for cryptographic models](image.png)
 
 
 ## License 📜
