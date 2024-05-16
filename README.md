@@ -77,7 +77,7 @@ You can get your API key from [here](https://beta.openai.com/).
 │   ├── playground_notebook_inference
 │   └── runs
 ├── model-preliminary-tests
-│   ├── How much does current models know crypto?.ipynb
+│   ├── How much does current models know crypto.ipynb
 │   ├── language_chaining_tests.ipynb
 │   ├── llama_tokenizer
 │   └── why_crypto_llama_2.ipynb
@@ -150,7 +150,7 @@ The dataset generator scripts are availble in the `dataset/dataset_generation` d
 
 The dataset is available in the `dataset/dataset_files` directory.
 
-# Model Training
+# Models
 Four models are fine tuned on the CryptoQA dataset.
 1. `crypto-llama7b-math` - [HF Model Card](https://huggingface.co/Manpa/crypto-math-llama7b)
 2.  `crypto-llama7b` - [HF Model Card](https://huggingface.co/Manpa/crypto-llama7b)
@@ -158,6 +158,10 @@ Four models are fine tuned on the CryptoQA dataset.
 4.  `crypto-metamath` - [HF Model Card](https://huggingface.co/Manpa/crypto-metamath)
 
 To run the models, you can use the scripts in the `train/model/` directory. 
+
+## Loss Charts and Results 📊
+![alt text](image.png)
+
 
 ## License 📜
 The codebase and the dataset are licensed under the MIT License. The dataset is publicly available on the Hugging Face Datasets Hub.
