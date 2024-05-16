@@ -161,7 +161,7 @@ To run the models, you can use the scripts in the `train/model/` directory.
 
 ## Loss Charts and Results 📊
 
-<img src="assets/loss-charts-results/loss_charts_crypto.png" alt="Loss charts for cryptographic models" width="500"/>
+<img src="assets/loss-charts-results/loss_charts_crypto.png" alt="Loss charts for cryptographic models" width="400"/>
 
 
 ## License 📜
