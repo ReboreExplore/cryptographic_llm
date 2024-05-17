@@ -159,10 +159,22 @@ Four models are fine tuned on the CryptoQA dataset.
 
 To run the models, you can use the scripts in the `train/model/` directory. 
 
+##  Running the scripts
+
+To run the scripts, you can use the following command:
+
+```bash 
+python train/model/crypto-llama7b-math/crypto-llama7b-math.py CUDA_VISIBLE_DEVICES=0
+```
+> [!NOTE] Change the model name in the path to run the other models and change the CUDA_VISIBLE_DEVICES to the GPU you want to use.
+There is also an additional specification to set the cache directory for the model. Make sure to change that with the correct path.
+
 ## Loss Charts and Results 📊
 
 <img src="assets/loss-charts-results/loss_charts_crypto.png" alt="Loss charts for cryptographic models" width="400"/>
 
+
+> [!NOTE] All the additional details about the project is linked in the [Research Project Report](presentations/research_project_report_manpa-final.pdf)
 
 ## License 📜
 The codebase and the dataset are licensed under the MIT License. The dataset is publicly available on the Hugging Face Datasets Hub.
